@@ -1,0 +1,71 @@
+Battery current
+Battery voltage before power switch
+Battery voltage after power switch
+LVBMS
+1st battery cell voltage
+2nd battery cell voltage
+3rd battery cell voltage
+Battery temperature
+Calibration voltages
+Cell state
+Calibration current
+Motor RPM
+Throttle Position
+Intake Air Tempreature
+MAP
+Oil Temperature
+Oil Pressure
+Fuel Pressure
+Coolant Temperature
+Ignition Angle
+Coil dwell time
+Lambda sensor
+Lambda correction
+Exhaust gas temperature  1
+Exhaust gas temperature  2
+Gear selection to EMU
+EMU internal temperature
+EMU battery voltage
+Clt error
+Drive by wire position
+Drive by wire target
+Starter Request
+Gear up
+Gear down
+Clutch
+Selected MAP
+Launch control switch
+AutoShift switch
+AntiStall switch
+Radio talk turn on switch
+Fan control switch
+DRS position control switch
+Balance bar control switch
+Traction control switch
+ADU page selection switch
+Brake fluid pressure front
+Steering wheel angle sensor
+Flowmeter 1
+Flowmeter 2
+Accelerometer x axis
+Accelerometer y axis
+Accelerometer z axis
+Gyroscope x axis
+Gyroscope y axis
+Gyroscope z axis
+Front Left Wheel: Linear Potentiometer
+Front Left Wheel: Wheel Speed
+Front Left Wheel: Tyre Temperature
+Front Left Wheel: Brake Temperature
+Front Right Wheel: Linear Potentiometer
+Front Right Wheel: Wheel Speed
+Front Right Wheel: Tyre Temperature
+Front Right Wheel: Brake Temperature
+Rear Left Wheel: Linear Potentiometer
+Rear Left Wheel: Wheel Speed
+Rear Left Wheel: Tyre Temperature
+Rear Left Wheel: Brake Temperature
+Rear Right Wheel: Linear Potentiometer
+Rear Right Wheel: Wheel Speed
+Rear Right Wheel: Tyre Temperature
+Rear Right Wheel: Brake Temperature
