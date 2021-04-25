@@ -119,6 +119,8 @@ class MainWindow(QtWidgets.QMainWindow):
         df = self.df
         dataChannel = df.get(self.currentDataKey)
         self.line.setData(df.index, dataChannel)  # line refresh with new data
+        for index, column in enumerate(df.columns):
+            self.valueLabelContainer[index].setText(f"{list(df[column])[len(df.index)-1]}")
 
     def getData(self):
         # Drop oldest data row
@@ -135,14 +137,16 @@ def BuildUI():
     mainWindow = MainWindow()
     mainWindow.show()
 
+    # Interval in ms
+    refreshInterval = 100
     # "Thread" executing data cycling
     timerCycle = QTimer()
     timerCycle.timeout.connect(mainWindow.getData)
-    timerCycle.start(0)  # interval in ms
+    timerCycle.start(refreshInterval)
     # "Thread" executing plot update
     timerPlot = QTimer()
     timerPlot.timeout.connect(mainWindow.updateData)
-    timerPlot.start(0)  # interval in ms
+    timerPlot.start(refreshInterval)
 
     sys.exit(app.exec_())
 
