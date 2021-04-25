@@ -1,17 +1,17 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import (Qt, QTimer)
 
 import pyqtgraph as pg
 import pandas as pd
 import sys  # We need sys so that we can pass argv to QApplication
 import random
-# from multiprocessing import *
 
 # Data Dict
 # Format = {key: [values], ...}
-DATA = {line[0:len(line) - 1]: [random.randint(0, 1000) for i in range(100)] for line in open("Dane.txt")}
+DATA_NAMES = [line for line in open("Dane.txt")]
+DATA = {line[0:len(line) - 1]: [random.randint(0, 1000) for i in range(100)] for line in DATA_NAMES}
 
 
 # Main window af the application
@@ -33,6 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.currentDataKey = list(DATA.keys())[0]
         self.valueLabelContainer = []
         self.valueButtonContainer = []
+        self.df = pd.DataFrame(data=DATA)
         # Run GUI
         self.initializeUI()
 
@@ -65,7 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # First row is static - Annotates columns
         self.gridOfLabels.addWidget(QLabel(text="Name"), 0, 1)
         self.gridOfLabels.addWidget(QLabel(text="Value"), 0, 2, alignment=Qt.AlignCenter)
-        self.gridOfLabels.addWidget(QLabel(text="Unit"), 0, 3)
+        self.gridOfLabels.addWidget(QLabel(text="Unit"), 0, 3, alignment=Qt.AlignCenter)
         # Create labels
         names = list(DATA.keys())
         for index, name in enumerate(names):
@@ -89,7 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # UNITS
             metricLabel = QtWidgets.QLabel(text="meters idk")
             metricLabel.setFont(QFont("Segoe UI", 8))
-            self.gridOfLabels.addWidget(metricLabel, row, 3, alignment=Qt.AlignLeft)
+            self.gridOfLabels.addWidget(metricLabel, row, 3, alignment=Qt.AlignCenter)
             # Store value labels for further text manipulation
             self.valueLabelContainer.append(valueLabel)
             # Store index buttons for further callback assignment
@@ -101,8 +102,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Add to mainWindow's grid
         self.grid.addWidget(self.graphWidget, 0, 1)
         # plot data: x, y values
-        gd = getData(self.currentDataKey)
-        self.line = self.graphWidget.plot([i for i in range(len(gd))], gd)
+        df = self.df
+        self.line = self.graphWidget.plot(df.index, df.get(self.currentDataKey))
         self.changeColor(12)  # start with button 12 active (Motor RPM)
 
     # Changes color of the clicked button as well as data and it's color on plot
@@ -112,23 +113,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lastButtonClicked = index - 1
         self.currentDataKey = list(DATA.keys())[index - 1]
         self.pen = pg.mkPen(color=(255, 0, 0))
-        updateData(self.line, self.currentDataKey)
+        self.updateData()
 
+    def updateData(self):
+        df = self.df
+        dataChannel = df.get(self.currentDataKey)
+        self.line.setData(df.index, dataChannel)  # line refresh with new data
 
-def updateData(line, currentDataKey):
-    gd = getData(currentDataKey)
-    line.setData([i for i in range(len(gd))], gd)  # line refresh with new data
-
-
-def getData(currentDataKey):
-    df = pd.DataFrame(data=DATA)
-    return df.get(currentDataKey)
+    def getData(self):
+        # Drop oldest data row
+        self.df.drop(index=0, inplace=True)
+        self.df.reset_index(drop=True)
+        # Append a new, youngest row
+        to_append = [random.randint(0, 1000) for _ in self.df.columns]
+        a_series = pd.Series(to_append, index=self.df.columns)
+        self.df = self.df.append(a_series, ignore_index=True)
 
 
 def BuildUI():
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
     mainWindow.show()
+
+    # "Thread" executing data cycling
+    timerCycle = QTimer()
+    timerCycle.timeout.connect(mainWindow.getData)
+    timerCycle.start(0)  # interval in ms
+    # "Thread" executing plot update
+    timerPlot = QTimer()
+    timerPlot.timeout.connect(mainWindow.updateData)
+    timerPlot.start(0)  # interval in ms
+
     sys.exit(app.exec_())
 
 
