@@ -8,15 +8,17 @@ import pandas as pd
 import sys  # We need sys so that we can pass argv to QApplication
 import random
 
+import tcp_sock
+import threading
+
 # Data Dict
 # Format = {key: [values], ...}
 DATA_NAMES = [line for line in open("Dane.txt")]
-DATA = {line[0:len(line) - 1]: [random.randint(0, 1000) for i in range(100)] for line in DATA_NAMES}
+DATA = {line[0:len(line) - 1]: [-1 for i in range(100)] for line in DATA_NAMES}
 
 
 # Main window af the application
 class MainWindow(QtWidgets.QMainWindow):
-
     line: pg.plot
 
     def __init__(self, *args, **kwargs):
@@ -25,6 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.grid = QGridLayout()
         self.gridOfLabels = QGridLayout()
         self.graphWidget = pg.PlotWidget()
+        self.graphWidget.showGrid(x=True, y=True, alpha=0.4)
         self.mainFrame = QFrame()
         self.labelFrame = QFrame()
         self.labelScroll = QScrollArea()
@@ -45,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.makeLabels()
         self.makeGraphs()
         # Overall window settings and shenanigans
-        self.setWindowState(Qt.WindowMaximized)  # start with the window maximized
+        # self.setWindowState(Qt.WindowMaximized)  # start with the window maximized
         self.move(300, 150)  # spawn the window offset from the Display's top left corner
         self.setWindowIcon(QIcon("TelemetryIcon.png"))
         self.setWindowTitle("Telemetry")
@@ -123,15 +126,15 @@ class MainWindow(QtWidgets.QMainWindow):
         dataChannel = df.get(self.currentDataKey)
         self.line.setData(df.index, dataChannel)  # line refresh with new data
         for index, column in enumerate(df.columns):
-            self.valueLabelContainer[index].setText(f"{list(df[column])[len(df.index)-1]}")
+            self.valueLabelContainer[index].setText(f"{list(df[column])[len(df.index) - 1]}")
 
     def getData(self):
         # Drop oldest data row
         self.df.drop(index=0, inplace=True)
         self.df.reset_index(drop=True)
-        # Append a new, youngest row
-        to_append = [random.randint(0, 1000) for _ in self.df.columns]
-        a_series = pd.Series(to_append, index=self.df.columns)
+        # Append a new, youngest row. We get data from DATA.py which is modified continuously by tcp_sock.reading()
+        newRow = [(int(tcp_sock.CAN[tcp_sock.SketchyDNS[i]].get()[2:], 16)) for i in self.df.columns]
+        a_series = pd.Series(newRow, index=self.df.columns)
         self.df = self.df.append(a_series, ignore_index=True)
 
 
@@ -150,6 +153,10 @@ def BuildUI():
     timerPlot = QTimer()
     timerPlot.timeout.connect(mainWindow.updateData)
     timerPlot.start(refreshInterval)
+    # "Thread" implementing a socket
+    timerSocket = threading.Thread(target=tcp_sock.reading)
+    timerSocket.daemon = True  # This makes the tcp_sock close upon app exit
+    timerSocket.start()
 
     sys.exit(app.exec_())
 

@@ -1,7 +1,8 @@
 import socket
 # import time
-from DATA import CAN
+from DATA import CAN, SketchyDNS
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind(('192.168.2.144', 1313))
 # sock.listen(1)
 
@@ -25,7 +26,7 @@ def reading():
     try:
         while 1:
             while True:
-                print("Waiting for data")
+                # print("Waiting for data")
                 receivedData, address = sock.recvfrom(BUFFER_LEN * 12)
 
                 if not receivedData:
@@ -34,8 +35,12 @@ def reading():
                     for i in range(0, len(receivedData), 12):
                         val = decode(receivedData[i:i + 12])
                         CAN[val[0]].put(val[1])
-                        print(val)
+                        # print(val)
 
             print("Disconnected from", address)
     finally:
         sock.close()
+
+
+if __name__ == "__main__":
+    reading()

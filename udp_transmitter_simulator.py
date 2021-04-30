@@ -20,11 +20,10 @@ def toBytes(address, value):
 if __name__ == "__main__":
     t = 0
     while True:
-        a = np.abs(np.sin(np.pi/2 + t))
-        a *= 10000
-        a = int(a)
-        print(hex(a))
-        for queueIndex in CAN:
-            sock.sendto(toBytes(int(queueIndex, 16), a), (HOST, PORT))
+        # creating a list of sine values with varying freq
+        sineList = [int(10000*np.abs(np.sin(np.pi/2 + t*(i+1)))) for i in range(len(CAN.keys()))]
+        # send different sine values from above to the corresponding DATA index
+        for index, queueIndex in enumerate(CAN):
+            sock.sendto(toBytes(int(queueIndex, 16), sineList[index]), (HOST, PORT))
         t += 0.01
         sleep(0.01)
