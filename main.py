@@ -64,6 +64,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelScroll.setMinimumWidth(500)
         self.labelScroll.setWidget(self.labelFrame)
         # First row is static - Annotates columns
+        uselessButtons = QPushButton(text=f"#")
+        uselessButtons.setFixedWidth(20)
+        self.gridOfLabels.addWidget(uselessButtons, 0, 0)  # Create
         self.gridOfLabels.addWidget(QLabel(text="Name"), 0, 1)
         self.gridOfLabels.addWidget(QLabel(text="Value"), 0, 2, alignment=Qt.AlignCenter)
         self.gridOfLabels.addWidget(QLabel(text="Unit"), 0, 3, alignment=Qt.AlignCenter)
@@ -138,7 +141,7 @@ def BuildUI():
     mainWindow.show()
 
     # Interval in ms
-    refreshInterval = 100
+    refreshInterval = 0
     # "Thread" executing data cycling
     timerCycle = QTimer()
     timerCycle.timeout.connect(mainWindow.getData)
